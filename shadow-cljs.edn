@@ -1,0 +1,23 @@
+{:deps   {:aliases [:provided :test-cljs :dev]}
+ :builds {:workspaces {:target     nubank.workspaces.shadow-cljs.target
+                       :ns-regexp  "-(test|cards)$"
+                       :output-dir "workspaces/js"
+                       :asset-path "/js"
+                       :dev        {:compiler-options {:external-config {:guardrails {:throw? false}}}}
+                       :devtools   {:preloads  [devtools.preload]
+                                    :http-root "workspaces"
+                                    :http-port 8086}}
+
+          :test       {:target           :browser-test
+                       :test-dir         "resources/public/js/test"
+                       :ns-regexp        "-test$"
+                       :compiler-options {:static-fns      false
+                                          :external-config {:guardrails {:throw? true :emit-spec? true}}}
+                       :devtools         {:http-port          9158
+                                          :http-resource-root "public"
+                                          :http-root          "resources/public/js/test"}}
+
+          :ci         {:target           :karma
+                       :compiler-options {:output-feature-set :es6}
+                       :ns-regexp        "-test$"
+                       :output-to        "target/ci.js"}}}
