@@ -136,7 +136,7 @@
                                :height 30})
 
       (if run-next
-        (.setEdge g node-id run-next))
+        (.setEdge g node-id run-next #js {:runNext true}))
 
       (doseq [branch (pcp/node-branches node)]
         (.setEdge g node-id branch)))
@@ -239,12 +239,12 @@
               (str id))))
 
         (for [item (mapv #(.edge data %) (.edges data))
-              :let [{:keys [points]} (j/lookup item)
+              :let [{:keys [points runNext]} (j/lookup item)
                     p0 (j/lookup (first points))
                     p1 (j/lookup (last points))]]
           (dom/path {:key   (str "path-" (js/JSON.stringify item))
                      :style {:fill   "none"
-                             :stroke " #000"}
+                             :stroke (if runNext "#000" "#ff9517")}
                      :d     (create-path-curve
                               {::x (:x p0) ::y (:y p0)}
                               {::x (:x p1) ::y (:y p1)})})))
