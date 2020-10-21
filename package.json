@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/wilkerlucio/pathom3#readme",
   "dependencies": {
+    "dagre": "^0.8.5",
     "highlight.js": "9.18.3",
     "karma": "^5.1.1",
     "karma-chrome-launcher": "^3.1.0",
