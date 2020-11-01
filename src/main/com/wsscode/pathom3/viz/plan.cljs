@@ -290,11 +290,15 @@
                                           :style    #js {:border-width 3
                                                          :border-color "#00c"}}
                                      #js {:selector "edge"
-                                          :style    #js {:curve-style "bezier"}}
+                                          :style    #js {:curve-style        "bezier"
+                                                         :width 2
+                                                         :target-arrow-shape "triangle"}}
                                      #js {:selector "edge.branch"
-                                          :style    #js {:line-color "#ff9517"}}
+                                          :style    #js {:line-color         "#ff9517"
+                                                         :target-arrow-color "#ff9517"}}
                                      #js {:selector "edge.next"
-                                          :style    #js {:line-color "#000"}}]
+                                          :style    #js {:line-color         "#000"
+                                                         :target-arrow-color "#000"}}]
                  :elements      (clj->js elements)}))))))
 
 (h/defnc PlanCytoscape [{:keys [frames]}]
