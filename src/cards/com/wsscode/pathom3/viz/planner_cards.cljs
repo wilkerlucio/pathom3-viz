@@ -9,7 +9,8 @@
     [helix.core :refer [$]]
     [nubank.workspaces.card-types.react :as ct.react]
     [nubank.workspaces.core :as ws]
-    [nubank.workspaces.model :as wsm]))
+    [nubank.workspaces.model :as wsm]
+    [helix.hooks :as hooks]))
 
 (ws/defcard plan-view-dagre-card
   {::wsm/align ::wsm/align-top-flex}
@@ -26,10 +27,15 @@
                   ::pcp/available-data {:d {}
                                         :e {}}
                   ::eql/query          [:h]}
-              '{::pci/index-oir {:a {#{:c} #{a}}
-                                 :b {#{:d} #{b}}
-                                 :c {#{} #{cd}}
-                                 :d {#{} #{cd d}}}
+              #_'{::pci/index-oir {:a {#{:c} #{a}}
+                                   :b {#{:d} #{b}}
+                                   :c {#{} #{cd}}
+                                   :d {#{} #{cd d}}}
+                  ::eql/query     [:a :b]}
+              '{::pci/index-oir {:a {#{:c :d} #{a}}
+                                 :b {#{:c :d} #{b}}
+                                 :c {#{} #{c}}
+                                 :d {#{} #{d}}}
                 ::eql/query     [:a :b]}
               #_'{::pci/index-oir {:a {#{:c :b} #{a}}
                                    :b {#{:d} #{bc bc2}}
@@ -38,3 +44,25 @@
                                    :d {#{} #{d}}}
                   ::eql/query     [:a]})
             (mapv (juxt identity viz-plan/layout-graph)))})))
+
+
+
+(ws/defcard plan-view-cytoscape-card
+  {::wsm/align ::wsm/stretch-flex}
+  (ct.react/react-card
+    (let [source-state (hooks/use-state '{::pci/index-oir {:a {#{:c :d} #{a}}
+                                                           :b {#{:c :d} #{b}}
+                                                           :c {#{} #{c}}
+                                                           :d {#{} #{d}}}
+                                          ::eql/query     [:a :b]})]
+      ($ viz-plan/PlanCytoscape
+        {:frames
+         (->> (viz-plan/frames
+                '{::pci/index-oir {:a {#{:c :b} #{a}}
+                                   :b {#{} #{b}}
+                                   :c {#{} #{c}}
+                                   :d {#{:c :b} #{d}}
+                                   :e {#{:c :b :f} #{e}}
+                                   :f {#{} #{f}}}
+                  ::eql/query     [:a :d :e]})
+              (mapv (juxt identity viz-plan/c-nodes-edges)))}))))
