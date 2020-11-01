@@ -18,14 +18,13 @@
     ($ viz-plan/PlanView
       {:frames
        (->> (viz-plan/frames
-              #_'{::pci/index-oir      {:a {#{:e} #{a}}
+              #_'{::pci/index-oir      {:a {#{} #{a}}
                                         :b {#{:g} #{b}}
-                                        :c {#{:d} #{c}}
+                                        :c {#{} #{c}}
                                         :f {#{:e} #{f}}
                                         :g {#{:c :f} #{g}}
                                         :h {#{:a :b} #{h}}}
-                  ::pcp/available-data {:d {}
-                                        :e {}}
+                  ::pcp/available-data {}
                   ::eql/query          [:h]}
               #_'{::pci/index-oir {:a {#{:c} #{a}}
                                    :b {#{:d} #{b}}
@@ -50,11 +49,13 @@
 (ws/defcard plan-view-cytoscape-card
   {::wsm/align ::wsm/stretch-flex}
   (ct.react/react-card
-    (let [source-state (hooks/use-state '{::pci/index-oir {:a {#{:c :d} #{a}}
-                                                           :b {#{:c :d} #{b}}
+    (let [source-state (hooks/use-state '{::pci/index-oir {:a {#{:c :b} #{a}}
+                                                           :b {#{} #{b}}
                                                            :c {#{} #{c}}
-                                                           :d {#{} #{d}}}
-                                          ::eql/query     [:a :b]})]
+                                                           :d {#{:c :b} #{d}}
+                                                           :e {#{:c :b :f} #{e}}
+                                                           :f {#{} #{f}}}
+                                          ::eql/query     [:a :d :e]})]
       ($ viz-plan/PlanCytoscape
         {:frames
          (->> (viz-plan/frames

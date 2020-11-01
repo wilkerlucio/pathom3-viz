@@ -291,7 +291,8 @@
                                                          :border-color "#00c"}}
                                      #js {:selector "edge"
                                           :style    #js {:curve-style        "bezier"
-                                                         :width 2
+                                                         :width              2
+                                                         :arrow-scale        0.8
                                                          :target-arrow-shape "triangle"}}
                                      #js {:selector "edge.branch"
                                           :style    #js {:line-color         "#ff9517"
