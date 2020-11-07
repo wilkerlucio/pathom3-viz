@@ -45,7 +45,7 @@
       (psm/with-keys-mode ::psm/keys-mode-reachable)))
 
 (defn new-graph []
-  (new (.. dagre -graphlib -Graph)))
+  ^js (new (.. dagre -graphlib -Graph)))
 
 (defn layout-graph [{::pcp/keys [nodes root]}]
   (let [nodes' (vals nodes)
@@ -74,9 +74,10 @@
     (.layout dagre g)
     g))
 
-(defn frames [{::pci/keys [index-oir]
-               ::pcp/keys [available-data]
-               ::eql/keys [query]}]
+(defn compute-frames
+  [{::pci/keys [index-oir]
+    ::pcp/keys [available-data]
+    ::eql/keys [query]}]
   (let [snapshots* (atom [])
         graph      (pcp/compute-run-graph
                      (cond-> {::pci/index-oir              index-oir
@@ -244,6 +245,31 @@
                      :easing   "ease-in-sine"
                      :complete #(.remove cy coll)})))
 
+(def default-graph-style
+  #js [#js {:selector "node"
+            :style    #js {:border-width        3
+                           :shape               "round-rectangle"
+                           :border-color        "data(color)"
+                           :label               "data(id)"
+                           :text-valign         "center"
+                           :background-color    "data(color)"
+                           :transition-property "border-color"
+                           :transition-duration (str anim-duration "ms")}}
+       #js {:selector "node.root"
+            :style    #js {:border-width 3
+                           :border-color "#00c"}}
+       #js {:selector "edge"
+            :style    #js {:curve-style        "bezier"
+                           :width              2
+                           :arrow-scale        0.8
+                           :target-arrow-shape "triangle"}}
+       #js {:selector "edge.branch"
+            :style    #js {:line-color         "#ff9517"
+                           :target-arrow-color "#ff9517"}}
+       #js {:selector "edge.next"
+            :style    #js {:line-color         "#000"
+                           :target-arrow-color "#000"}}])
+
 (defn cytoscape-planner-effect
   [{:keys [container-ref display-type]} elements]
   (let [cy-ref (hooks/use-ref nil)]
@@ -255,7 +281,7 @@
               (.update)))
     (hooks/use-effect [elements]
       (if @cy-ref
-        (let [cy         @cy-ref
+        (let [cy         ^js @cy-ref
               {:strs [nodes edges]} (group-by :group elements)
               [add-nodes remove-nodes] (node-diff cy nodes (.nodes cy))
               [add-edges remove-edges] (node-diff cy edges (.edges cy))
@@ -264,7 +290,7 @@
             (fn []
               (remove-fade-out cy remove-all)
               (doseq [{:keys [data classes]} nodes]
-                (when-let [node (first (.nodes cy (str "[id=\"" (:id data) "\"]")))]
+                (when-let [node ^js (first (.nodes cy (str "[id=\"" (:id data) "\"]")))]
                   (.classes node (into-array classes))))
               (add-fade-in cy (clj->js add-nodes))
               (add-fade-in cy (clj->js add-edges))))
@@ -300,11 +326,11 @@
                                           :style    #js {:line-color         "#ff9517"
                                                          :target-arrow-color "#ff9517"}}
                                      #js {:selector "edge.next"
-                                          :style    #js {:line-color         "#000"
-                                                         :target-arrow-color "#000"}}]
+                                          :style    #js {:line-color         "#eee"
+                                                         :target-arrow-color "#eee"}}]
                  :elements      (clj->js elements)}))))))
 
-(h/defnc PlanCytoscape [{:keys [frames]}]
+(h/defnc ^:export PlanCytoscape [{:keys [frames]}]
   (let [[current-frame :as frame-state] (hooks/use-state (dec (count frames)))
         [{::pcp/keys [snapshot-event snapshot-message] :as graph} elements] (get frames current-frame)
         [display-type :as display-type-state] (use-persistent-state ::display-type ::display-type-node-id)
@@ -312,6 +338,7 @@
     (cytoscape-planner-effect {:container-ref container-ref
                                :display-type  display-type} elements)
     (dom/div {:style {:width          "100%"
+                      :height         "100%"
                       :display        "flex"
                       :flex-direction "column"}}
       ($ PlanControls {:frame-state        frame-state
@@ -321,15 +348,22 @@
       (dom/div {:style {:flex "1"}
                 :ref   #(reset! container-ref %)}))))
 
+(h/defnc ^:export PlanCytoscapeJS [{:keys [oir query]}]
+  ($ PlanCytoscape
+    {:frames
+     (->> (compute-frames {::pci/index-oir (read-string oir)
+                           ::eql/query     (read-string query)})
+          (mapv (juxt identity c-nodes-edges)))}))
+
 (comment
   (gobj/equals #js {:foo #js ["bar"]} #js {:foo #js ["bar"]})
 
   (cytoscape #js {:elements (clj->js)})
 
-  (-> (frames '{::pci/index-oir {:a {#{:c :d} #{a}}
-                                 :b {#{:c :d} #{b}}
-                                 :c {#{} #{c}}
-                                 :d {#{} #{d}}}
-                ::eql/query     [:a :b]})
+  (-> (compute-frames '{::pci/index-oir {:a {#{:c :d} #{a}}
+                                         :b {#{:c :d} #{b}}
+                                         :c {#{} #{c}}
+                                         :d {#{} #{d}}}
+                        ::eql/query     [:a :b]})
       last
       c-nodes-edges))

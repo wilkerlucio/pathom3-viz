@@ -17,7 +17,7 @@
   (ct.react/react-card
     ($ viz-plan/PlanView
       {:frames
-       (->> (viz-plan/frames
+       (->> (viz-plan/compute-frames
               #_'{::pci/index-oir      {:a {#{} #{a}}
                                         :b {#{:g} #{b}}
                                         :c {#{} #{c}}
@@ -59,7 +59,7 @@
                                           ::eql/query          [:h]})]
       ($ viz-plan/PlanCytoscape
         {:frames
-         (->> (viz-plan/frames
+         (->> (viz-plan/compute-frames
                 '{::pci/index-oir {:a {#{:c :b} #{a}}
                                    :b {#{:d} #{bc bc2}}
                                    :c {#{:d} #{bc bc2}}
