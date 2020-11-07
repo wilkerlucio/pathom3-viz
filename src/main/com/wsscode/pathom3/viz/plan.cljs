@@ -281,8 +281,10 @@
                                      :rankDir "LR"}
                  :style         #js [#js {:selector "node"
                                           :style    #js {:border-width        3
+                                                         :shape               "round-rectangle"
                                                          :border-color        "data(color)"
                                                          :label               (display-type->label display-type)
+                                                         :text-valign         "center"
                                                          :background-color    "data(color)"
                                                          :transition-property "border-color"
                                                          :transition-duration (str anim-duration "ms")}}

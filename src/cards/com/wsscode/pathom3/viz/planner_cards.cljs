@@ -49,21 +49,21 @@
 (ws/defcard plan-view-cytoscape-card
   {::wsm/align ::wsm/stretch-flex}
   (ct.react/react-card
-    (let [source-state (hooks/use-state '{::pci/index-oir {:a {#{:c :b} #{a}}
-                                                           :b {#{} #{b}}
-                                                           :c {#{} #{c}}
-                                                           :d {#{:c :b} #{d}}
-                                                           :e {#{:c :b :f} #{e}}
-                                                           :f {#{} #{f}}}
-                                          ::eql/query     [:a :d :e]})]
+    (let [source-state (hooks/use-state '{::pci/index-oir      {:a {#{} #{a}}
+                                                                :b {#{:g} #{b}}
+                                                                :c {#{} #{c}}
+                                                                :f {#{:e} #{f}}
+                                                                :g {#{:c :f} #{g}}
+                                                                :h {#{:a :b} #{h}}}
+                                          ::pcp/available-data {}
+                                          ::eql/query          [:h]})]
       ($ viz-plan/PlanCytoscape
         {:frames
          (->> (viz-plan/frames
                 '{::pci/index-oir {:a {#{:c :b} #{a}}
-                                   :b {#{} #{b}}
-                                   :c {#{} #{c}}
-                                   :d {#{:c :b} #{d}}
-                                   :e {#{:c :b :f} #{e}}
-                                   :f {#{} #{f}}}
-                  ::eql/query     [:a :d :e]})
+                                   :b {#{:d} #{bc bc2}}
+                                   :c {#{:d} #{bc bc2}}
+                                   :e {#{:d} #{bc bc2}}
+                                   :d {#{} #{d}}}
+                  ::eql/query     [:a]})
               (mapv (juxt identity viz-plan/c-nodes-edges)))}))))
