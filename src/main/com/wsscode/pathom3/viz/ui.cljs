@@ -1,7 +1,9 @@
 (ns com.wsscode.pathom3.viz.ui
   (:require [cljs.tools.reader :refer [read-string]]
             [helix.dom :as dom]
-            [com.wsscode.misc.coll :as coll]))
+            [com.wsscode.misc.coll :as coll]
+            [helix.hooks :as hooks]
+            [com.wsscode.js.browser-local-storage :as ls]))
 
 (defn state-hook-serialize [[value set-value!]]
   [(pr-str value) #(set-value! (read-string %))])
@@ -21,3 +23,8 @@
     (for [[value label] options]
       (let [value-str (pr-str value)]
         (dom/option {:value value-str :key value-str} (str label))))))
+
+(defn use-persistent-state [store-key initial-value]
+  (let [[value set-value!] (hooks/use-state (ls/get store-key initial-value))
+        set-persistent! (fn [x] (ls/set! store-key x) (doto x set-value!))]
+    [value set-persistent!]))
