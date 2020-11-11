@@ -122,31 +122,6 @@
                      :easing   "ease-in-sine"
                      :complete #(.remove cy coll)})))
 
-(def default-graph-style
-  #js [#js {:selector "node"
-            :style    #js {:border-width        3
-                           :shape               "round-rectangle"
-                           :label               "data(id)"
-                           :text-valign         "center"
-                           :transition-property "border-color"
-                           :transition-duration (str anim-duration "ms")}}
-       #js {:selector "node.root"
-            :style    #js {:border-width 3
-                           :border-color "#00c"}}
-       #js {:selector "node.node-and"
-            :style    #js {:background-color "yellow"}}
-       #js {:selector "edge"
-            :style    #js {:curve-style        "bezier"
-                           :width              2
-                           :arrow-scale        0.8
-                           :target-arrow-shape "triangle"}}
-       #js {:selector "edge.branch"
-            :style    #js {:line-color         "#ff9517"
-                           :target-arrow-color "#ff9517"}}
-       #js {:selector "edge.next"
-            :style    #js {:line-color         "#000"
-                           :target-arrow-color "#000"}}])
-
 (defn cytoscape-planner-effect
   [{:keys [container-ref display-type]} elements]
   (let [cy-ref (hooks/use-ref nil)]
@@ -212,7 +187,7 @@
 (h/defnc ^:export PlanCytoscape [{:keys [frames]}]
   (let [[current-frame :as frame-state] (hooks/use-state (dec (count frames)))
         [{::pcp/keys [snapshot-event snapshot-message] :as graph} elements] (get frames current-frame)
-        [display-type :as display-type-state] (ui/use-persistent-state ::display-type ::display-type-node-id)
+        [display-type :as display-type-state] (hooks/use-state ::display-type-node-id)
         [show-history? set-show-history] (ui/use-persistent-state ::show-history? true)
         container-ref (hooks/use-ref nil)]
     (cytoscape-planner-effect {:container-ref container-ref
