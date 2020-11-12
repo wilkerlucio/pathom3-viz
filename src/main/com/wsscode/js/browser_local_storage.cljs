@@ -1,6 +1,7 @@
 (ns com.wsscode.js.browser-local-storage
   (:refer-clojure :exclude [get set!])
-  (:require [cljs.reader :refer [read-string]]))
+  (:require
+    [cljs.reader :refer [read-string]]))
 
 (def local-storage (.-localStorage js/window))
 

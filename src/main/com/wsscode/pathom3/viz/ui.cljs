@@ -1,9 +1,10 @@
 (ns com.wsscode.pathom3.viz.ui
-  (:require [cljs.tools.reader :refer [read-string]]
-            [helix.dom :as dom]
-            [com.wsscode.misc.coll :as coll]
-            [helix.hooks :as hooks]
-            [com.wsscode.js.browser-local-storage :as ls]))
+  (:require
+    [cljs.tools.reader :refer [read-string]]
+    [com.wsscode.js.browser-local-storage :as ls]
+    [com.wsscode.misc.coll :as coll]
+    [helix.dom :as dom]
+    [helix.hooks :as hooks]))
 
 (defn state-hook-serialize [[value set-value!]]
   [(pr-str value) #(set-value! (read-string %))])
