@@ -14,7 +14,8 @@
                 org.clojure/clojurescript {:mvn/version "1.10.764"}}}
 
   :dev
-  {:extra-deps  {nubank/workspaces  {:local/root "/Users/wilkerlucio/Development/workspaces"}
+  {:extra-deps  {nubank/workspaces  {:git/url "https://github.com/wilkerlucio/workspaces.git"
+                                     :sha     "f9521f7b810b8dad9fe62a03a888a4e30044d07e"}
                  binaryage/devtools {:mvn/version "1.0.0"}}
    :extra-paths ["src/cards"]}
 
