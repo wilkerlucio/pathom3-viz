@@ -20,7 +20,7 @@ jobs:
         run: echo "$(clj-kondo --lint \"$(clojure -Spath -A:provided)\")"
 
       - name: Run linter
-        run: clj-kondo --lint src test
+        run: clj-kondo --lint src
 
   format:
     runs-on: ubuntu-latest
