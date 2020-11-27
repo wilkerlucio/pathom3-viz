@@ -2,7 +2,6 @@
   (:require
     ["cytoscape" :as cytoscape]
     ["cytoscape-dagre" :as cytoscape-dagre]
-    [cljs.tools.reader :refer [read-string]]
     [com.wsscode.pathom3.connect.indexes :as pci]
     [com.wsscode.pathom3.connect.operation :as pco]
     [com.wsscode.pathom3.connect.planner :as pcp]
@@ -10,8 +9,7 @@
     [com.wsscode.pathom3.interface.smart-map :as psm]
     [com.wsscode.pathom3.viz.ui :as ui]
     [edn-query-language.core :as eql]
-    [goog.object :as gobj]
-    [helix.core :as h :refer [$]]
+    [helix.core :as h]
     [helix.dom :as dom]
     [helix.hooks :as hooks]))
 
@@ -181,10 +179,10 @@
                                                                :target-arrow-color "#000"}}]
                        :elements      (clj->js elements)}))))))
 
-(h/defnc ^:export PlanCytoscape [{:keys [frames]}]
+(h/defnc ^:export PlanCytoscape [{:keys [frames display]}]
   (let [[current-frame :as frame-state] (hooks/use-state (dec (count frames)))
         [{::pcp/keys [snapshot-message]} elements] (get frames current-frame)
-        [display-type :as display-type-state] (hooks/use-state ::display-type-node-id)
+        [display-type :as display-type-state] (hooks/use-state (or display ::display-type-node-id))
         [show-history? set-show-history] (ui/use-persistent-state ::show-history? true)
         container-ref (hooks/use-ref nil)]
     (cytoscape-planner-effect {:container-ref container-ref
@@ -214,21 +212,3 @@
         (dom/div {:style {:flex     "1"
                           :overflow "hidden"}
                   :ref   container-ref})))))
-
-(h/defnc ^:export PlanCytoscapeJS [{:keys [oir query]}]
-  ($ PlanCytoscape
-     {:frames
-      (->> (compute-frames {::pci/index-oir (read-string oir)
-                            ::eql/query     (read-string query)})
-           (mapv (juxt identity c-nodes-edges)))}))
-
-(comment
-  (gobj/equals #js {:foo #js ["bar"]} #js {:foo #js ["bar"]})
-
-  (-> (compute-frames '{::pci/index-oir {:a {#{:c :d} #{a}}
-                                         :b {#{:c :d} #{b}}
-                                         :c {#{} #{c}}
-                                         :d {#{} #{d}}}
-                        ::eql/query     [:a :b]})
-      last
-      c-nodes-edges))
