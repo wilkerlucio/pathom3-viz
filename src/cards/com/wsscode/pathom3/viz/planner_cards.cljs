@@ -21,4 +21,4 @@
                                             :e {#{:d} #{bc bc2}}
                                             :d {#{} #{d}}}
                            ::eql/query     [:a]})
-                       (mapv (juxt identity viz-plan/c-nodes-edges)))})))
+                       (mapv (juxt identity viz-plan/compute-plan-elements)))})))

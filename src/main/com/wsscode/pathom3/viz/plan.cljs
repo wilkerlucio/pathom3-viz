@@ -24,7 +24,7 @@
    (case node-type
      ::pcp/node-and "AND"
      ::pcp/node-or "OR"
-     ::pcp/node-resolver (::pco/op-name (p.ent/entity env)))})
+     ::pcp/node-resolver (name (::pco/op-name (p.ent/entity env))))})
 
 (pco/defresolver node-type-class [{::pcp/keys [node-type]}]
   {::node-type-class
@@ -39,7 +39,10 @@
   (-> (pci/register node-extensions-registry)
       (psm/with-keys-mode ::psm/keys-mode-reachable)))
 
-(defn compute-frames
+(defn smart-plan [plan]
+  (psm/smart-map node-extensions-env plan))
+
+(defn ^:export compute-frames
   [{::pci/keys [index-oir]
     ::pcp/keys [available-data]
     ::eql/keys [query]}]
@@ -50,11 +53,11 @@
                               :edn-query-language.ast/node (eql/query->ast query)}
                        available-data
                        (assoc ::pcp/available-data available-data)))
-        frames     (-> (mapv #(psm/smart-map node-extensions-env %) @snapshots*)
-                       (conj (psm/smart-map node-extensions-env (assoc graph ::pcp/snapshot-message "Completed graph."))))]
+        frames     (-> (mapv smart-plan @snapshots*)
+                       (conj (smart-plan (assoc graph ::pcp/snapshot-message "Completed graph."))))]
     frames))
 
-(defn c-nodes-edges [{::pcp/keys [nodes root]}]
+(defn ^:export compute-plan-elements [{::pcp/keys [nodes root]}]
   (let [nodes'  (vals nodes)
         c-nodes (mapv
                   (fn [{::pcp/keys [node-id]
@@ -149,7 +152,7 @@
       (reset! cy-ref
               (cytoscape
                 #js {:container     @container-ref
-                     :autoungrabify true
+                     ;:autoungrabify true
                      :layout        #js {:name    "dagre"
                                          :rankDir "LR"}
                      :style         #js [#js {:selector "node"
