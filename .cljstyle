@@ -1,4 +1,6 @@
-{:indents               {.then                   [[:inner 0]]
+{:indents               {#"dom/.+"               [[:inner 0]]
+                         #"hooks/use-.+"         [[:inner 0]]
+                         .then                   [[:inner 0]]
                          >def                    [[:inner 0]]
                          >defn                   [[:inner 0]]
                          >defn-                  [[:inner 0]]
@@ -20,8 +22,6 @@
                          every?                  [[:inner 0]]
                          fp/defsc                [[:inner 0]]
                          h/defnc                 [[:inner 0]]
-                         #"dom/.+"               [[:inner 0]]
-                         #"hooks/use-.+"         [[:inner 0]]
                          let-chan                [[:inner 0]]
                          let-chan*               [[:inner 0]]
                          mapv                    [[:inner 0]]
@@ -50,7 +50,8 @@
                          some                    [[:inner 0]]
                          swap!                   [[:inner 0]]
                          update                  [[:inner 0]]
-                         update-in               [[:inner 0]]}
+                         update-in               [[:inner 0]]
+                         ws/defcard              [[:inner 0]]}
  :line-break-functions? false
  :max-blank-lines       1
  :insert-padding-lines? true

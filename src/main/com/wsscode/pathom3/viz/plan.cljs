@@ -2,13 +2,16 @@
   (:require
     ["cytoscape" :as cytoscape]
     ["cytoscape-dagre" :as cytoscape-dagre]
+    [clojure.datafy :as d]
     [com.wsscode.pathom3.connect.indexes :as pci]
     [com.wsscode.pathom3.connect.operation :as pco]
     [com.wsscode.pathom3.connect.planner :as pcp]
+    [com.wsscode.pathom3.connect.runner :as pcr]
     [com.wsscode.pathom3.entity-tree :as p.ent]
     [com.wsscode.pathom3.interface.smart-map :as psm]
     [com.wsscode.pathom3.viz.ui :as ui]
     [edn-query-language.core :as eql]
+    [goog.object :as gobj]
     [helix.core :as h]
     [helix.dom :as dom]
     [helix.hooks :as hooks]))
@@ -35,12 +38,9 @@
 
 (def node-extensions-registry [node-type node-label node-type-class])
 
-(def node-extensions-env
-  (-> (pci/register node-extensions-registry)
-      (psm/with-keys-mode ::psm/keys-mode-reachable)))
-
 (defn smart-plan [plan]
-  (psm/smart-map node-extensions-env plan))
+  (-> (psm/smart-run-stats plan)
+      (psm/sm-update-env pci/register node-extensions-registry)))
 
 (defn ^:export compute-frames
   [{::pci/keys [index-oir]
@@ -61,11 +61,17 @@
   (let [nodes'  (vals nodes)
         c-nodes (mapv
                   (fn [{::pcp/keys [node-id]
-                        ::keys     [node-label node-type-class]}]
+                        ::pcr/keys [node-run-output node-error]
+                        ::keys     [node-label node-type-class]
+                        :as        node}]
                     {:group   "nodes"
-                     :data    {:id    (str node-id)
-                               :label node-label}
-                     :classes (cond-> [node-type-class] (= root node-id) (conj "root"))})
+                     :data    {:id          (str node-id)
+                               :label       node-label
+                               :source-node (volatile! node)}
+                     :classes (cond-> [node-type-class]
+                                node-run-output (conj "node-success")
+                                node-error (conj "node-error")
+                                (= root node-id) (conj "root"))})
                   nodes')
         all     (into c-nodes
                       (mapcat
@@ -149,37 +155,46 @@
             (.difference remove-all)
             (.layout #js {:name "dagre" :rankDir "LR" :animate true :animationDuration anim-duration})
             (.run)))
-      (reset! cy-ref
-              (cytoscape
-                #js {:container     @container-ref
-                     ;:autoungrabify true
-                     :layout        #js {:name    "dagre"
-                                         :rankDir "LR"}
-                     :style         #js [#js {:selector "node"
-                                              :style    #js {:text-valign         "center"
-                                                             :transition-property "border-color border-width"
-                                                             :transition-duration (str anim-duration "ms")}}
-                                         #js {:selector "node.node-and"
-                                              :style    #js {:background-color "#bcbd22"}}
-                                         #js {:selector "node.node-or"
-                                              :style    #js {:background-color "#17becf"}}
-                                         #js {:selector "node.node-resolver"
-                                              :style    #js {:background-color "#7f7f7f"}}
-                                         #js {:selector "node.root"
-                                              :style    #js {:border-width 3
-                                                             :border-color "#000"}}
-                                         #js {:selector "edge"
-                                              :style    #js {:curve-style        "bezier"
-                                                             :width              2
-                                                             :arrow-scale        0.8
-                                                             :target-arrow-shape "triangle"}}
-                                         #js {:selector "edge.branch"
-                                              :style    #js {:line-color         "#ff7f0e"
-                                                             :target-arrow-color "#ff7f0e"}}
-                                         #js {:selector "edge.next"
-                                              :style    #js {:line-color         "#000"
-                                                             :target-arrow-color "#000"}}]
-                     :elements      (clj->js elements)})))))
+      (let [cy (cytoscape
+                 #js {:container @container-ref
+                      ;:autoungrabify true
+                      :layout    #js {:name    "dagre"
+                                      :rankDir "LR"}
+                      :style     #js [#js {:selector "node"
+                                           :style    #js {:text-valign         "center"
+                                                          :transition-property "border-color border-width"
+                                                          :transition-duration (str anim-duration "ms")}}
+                                      #js {:selector "node.node-and"
+                                           :style    #js {:background-color "#bcbd22"}}
+                                      #js {:selector "node.node-or"
+                                           :style    #js {:background-color "#17becf"}}
+                                      #js {:selector "node.node-resolver"
+                                           :style    #js {:background-color "#7f7f7f"}}
+                                      #js {:selector "node.root"
+                                           :style    #js {:border-width 3
+                                                          :border-color "#000"}}
+                                      #js {:selector "node.node-success"
+                                           :style    #js {:background-color "#00cc00"}}
+                                      #js {:selector "node.node-error"
+                                           :style    #js {:background-color "#cc0000"}}
+                                      #js {:selector "edge"
+                                           :style    #js {:curve-style        "bezier"
+                                                          :width              2
+                                                          :arrow-scale        0.8
+                                                          :target-arrow-shape "triangle"}}
+                                      #js {:selector "edge.branch"
+                                           :style    #js {:line-color         "#ff7f0e"
+                                                          :target-arrow-color "#ff7f0e"}}
+                                      #js {:selector "edge.next"
+                                           :style    #js {:line-color         "#000"
+                                                          :target-arrow-color "#000"}}]
+                      :elements  (clj->js elements)})]
+        (.on cy "click" "node"
+             (fn [e]
+               (if-let [node-data (some-> e .-target (aget 0) (.data) (gobj/get "source-node") deref)]
+                 (js/console.log (::pcp/node-id node-data)
+                                 (select-keys node-data (vec (keys (d/datafy node-data))))))))
+        (reset! cy-ref cy)))))
 
 (h/defnc PlanGraphView [{:keys [elements display-type]}]
   (let [container-ref (hooks/use-ref nil)
