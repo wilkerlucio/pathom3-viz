@@ -5,7 +5,7 @@
  {applied-science/js-interop {:mvn/version "0.2.7"}
   com.fulcrologic/guardrails {:mvn/version "0.0.12"}
   com.wsscode/js-interop     {:git/url "https://github.com/wilkerlucio/js-data-interop" :sha "ca861d607da8cf63208e296b0250eae225d9a10c"}
-  com.wsscode/pathom3        {:git/url "https://github.com/wilkerlucio/pathom3" :sha "3a7b2bfeddbdbf8721f9410bfc1db9ab5977d99c"}
+  com.wsscode/pathom3        {:git/url "https://github.com/wilkerlucio/pathom3" :sha "21038ee55b01673c56b85efc1d7e04700ee31d01"}
   lilactown/helix            {:git/url "https://github.com/lilactown/helix" :sha "5785e9332534cb16da749699634556d573e44bb2"}}
 
  :aliases
